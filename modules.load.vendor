@@ -41,6 +41,7 @@ ccci_dpmaif.ko
 ccci_md_all.ko
 ccci_util_lib.ko
 ccci_fsm_scp.ko
+wmt_drv.ko
 mtk-mbox.ko
 mtk_rpmsg_mbox.ko
 mtk_tinysys_ipi.ko
