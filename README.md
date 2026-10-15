@@ -1,6 +1,6 @@
 # android_device_xiaomi_gold-kernel
 
-Prebuilt stock kernel for the Redmi Note 13 5G (`gold`): the kernel image, the device trees and the kernel modules. It is checked out at `device/xiaomi/gold-kernel`.
+Prebuilt stock kernel for the Redmi Note 13 5G (`gold`): the kernel image, the device trees and the kernel modules, and a newer GKI build from Google under `gki/`. It is checked out at `device/xiaomi/gold-kernel`.
 
 | | |
 | --- | --- |
@@ -40,6 +40,7 @@ SHA-256 35c9f1d98b28538ac10c319ad4cba993cd5a632960d9111162e3efa494dae5c9
 | 2 | Adds `wmt_drv.ko` to `modules.load.vendor`. The Wi-Fi, Bluetooth, GPS and FM drivers depend on it |
 | 3 | Changes one byte in `hq_charger_sysfs.ko`, to stop a thread that only serves MIUI's charging animation |
 | 4 | Adds `kernel_aarch64_Module.symvers` of the stock GKI build, for building vendor modules against it |
+| 5 | Adds Google's GKI build 16498190 (`android15-6.6-2026-10_r1`) in `gki/16498190/` |
 
 Each commit message gives the exact command.
 
@@ -88,10 +89,35 @@ After the progress lines of `ota_extractor`, nothing more is printed when every 
 
 ```sh
 device/xiaomi/gold/extract-kernel.sh gold_global-ota_full-OS3.0.5.0.VNQMIXM-user-15.0-df9ff3aa93.zip /tmp/gold-kernel
-diff -r --exclude=.git --exclude=README.md --exclude=kernel_aarch64_Module.symvers /tmp/gold-kernel device/xiaomi/gold-kernel
+diff -r --exclude=.git --exclude=README.md --exclude=kernel_aarch64_Module.symvers --exclude=gki /tmp/gold-kernel device/xiaomi/gold-kernel
 ```
 
 `diff` prints nothing when they are the same.
+
+## GKI builds
+
+The kernel image and the `system_dlkm` modules are Google's GKI, not Xiaomi's: any later GKI build of the same KMI generation (`android15-8`) runs the same vendor modules. The device tree picks one with `GOLD_GKI`:
+
+| `GOLD_GKI` | Files |
+| --- | --- |
+| `stock` | `kernel`, `system_dlkm/` and `kernel_aarch64_Module.symvers` at the top: build 15511674, as stock ships it |
+| `latest` | the same three in `gki/16498190/`: build 16498190, `6.6.143-android15-8-g170954b20ad9-ab16498190-4k` (`android15-6.6-2026-10_r1`, [release builds](https://source.android.com/docs/core/architecture/kernel/gki-android15-6_6-release-builds)) |
+
+`kernel_aarch64_Module.symvers` is what vendor modules built from source are linked against, so that they carry the CRCs this kernel checks.
+
+`gki/<build>/` is made by `fetch-gki.sh` in the device tree from Google's build artifacts: `Image.gz` as `kernel`, the symbol versions, and from `system_dlkm_staging_archive.tar.gz` the modules stock's `system_dlkm/lib/modules/modules.load` names, with that list and Google's `modules.dep` and `modules.alias` cut down to them. Build 16498190 no longer has `tls.ko` (`CONFIG_TLS` is gone from `gki_defconfig`); nothing depends on it. To check it, from the top of a LineageOS tree with both repositories checked out:
+
+```sh
+device/xiaomi/gold/fetch-gki.sh 16498190 /tmp/gold-kernel-check
+```
+
+with a copy of this repository at `/tmp/gold-kernel-check`, then `git -C /tmp/gold-kernel-check status` shows no change. The stock build's files can be checked the same way against its artifacts:
+
+```sh
+B=https://ci.android.com/builds/submitted/15511674/kernel_aarch64/latest/raw
+curl -sL $B/Image.gz | cmp - kernel
+curl -sL $B/kernel_aarch64_Module.symvers | cmp - kernel_aarch64_Module.symvers
+```
 
 ## Regenerating
 
