@@ -27,8 +27,9 @@ SHA-256 35c9f1d98b28538ac10c319ad4cba993cd5a632960d9111162e3efa494dae5c9
 | `vendor_dlkm/*.ko` | `lib/modules/` in the `vendor_dlkm` partition |
 | `modules.load.vendor` | `lib/modules/modules.load` in the `vendor_dlkm` partition |
 | `system_dlkm/lib/modules/` | the same path in the `system_dlkm` partition |
+| `kernel_aarch64_Module.symvers` | not in the package: the symbol versions of the same GKI build, from Google's build artifacts |
 
-- The kernel image is Google's GKI build `6.6.118-android15-8-ge56cf6b09cca-ab15511674-4k`. Its source is the Android common kernel at commit [e56cf6b09cca](https://android.googlesource.com/kernel/common/+/e56cf6b09cca). The GKI modules in `system_dlkm` come from the same build.
+- The kernel image is Google's GKI build `6.6.118-android15-8-ge56cf6b09cca-ab15511674-4k` (`android15-6.6-2026-01_r34`), byte for byte the `Image.gz` Google publishes for it. Its source is the Android common kernel at commit [e56cf6b09cca](https://android.googlesource.com/kernel/common/+/e56cf6b09cca). The GKI modules in `system_dlkm` come from the same build.
 - The other modules are Xiaomi's and MediaTek's, as shipped. Xiaomi has published kernel source for this phone only for its Android 13 release (5.10).
 
 ## History
@@ -38,6 +39,7 @@ SHA-256 35c9f1d98b28538ac10c319ad4cba993cd5a632960d9111162e3efa494dae5c9
 | 1 | Imports the files exactly as the package has them |
 | 2 | Adds `wmt_drv.ko` to `modules.load.vendor`. The Wi-Fi, Bluetooth, GPS and FM drivers depend on it |
 | 3 | Changes one byte in `hq_charger_sysfs.ko`, to stop a thread that only serves MIUI's charging animation |
+| 4 | Adds `kernel_aarch64_Module.symvers` of the stock GKI build, for building vendor modules against it |
 
 Each commit message gives the exact command.
 
@@ -86,7 +88,7 @@ After the progress lines of `ota_extractor`, nothing more is printed when every 
 
 ```sh
 device/xiaomi/gold/extract-kernel.sh gold_global-ota_full-OS3.0.5.0.VNQMIXM-user-15.0-df9ff3aa93.zip /tmp/gold-kernel
-diff -r --exclude=.git --exclude=README.md /tmp/gold-kernel device/xiaomi/gold-kernel
+diff -r --exclude=.git --exclude=README.md --exclude=kernel_aarch64_Module.symvers /tmp/gold-kernel device/xiaomi/gold-kernel
 ```
 
 `diff` prints nothing when they are the same.
