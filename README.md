@@ -39,7 +39,7 @@ SHA-256 35c9f1d98b28538ac10c319ad4cba993cd5a632960d9111162e3efa494dae5c9
 | 2 | Adds `wmt_drv.ko` to `modules.load.vendor`. The Wi-Fi, Bluetooth, GPS and FM drivers depend on it |
 | 3 | Changes one byte in `hq_charger_sysfs.ko`, to stop a thread that only serves MIUI's charging animation |
 
-Each commit message gives the exact command. The history is rebuilt whenever a change is altered, so commit ids do not last.
+Each commit message gives the exact command.
 
 ## Verifying
 
